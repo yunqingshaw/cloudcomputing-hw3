@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" 
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" 
+        integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.5.0.min.js" 
+        integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="lib/axios/dist/axios.standalone.js"></script>
+        <script type="text/javascript" src="lib/CryptoJS/rollups/hmac-sha256.js"></script>
+        <script type="text/javascript" src="lib/CryptoJS/rollups/sha256.js"></script>
+        <script type="text/javascript" src="lib/CryptoJS/components/hmac.js"></script>
+        <script type="text/javascript" src="lib/CryptoJS/components/enc-base64.js"></script>
+        <script type="text/javascript" src="lib/url-template/url-template.js"></script>
+        <script type="text/javascript" src="lib/apiGatewayCore/sigV4Client.js"></script>
+        <script type="text/javascript" src="lib/apiGatewayCore/apiGatewayClient.js"></script>
+        <script type="text/javascript" src="lib/apiGatewayCore/simpleHttpClient.js"></script>
+        <script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
+        <script type="text/javascript" src="apigClient.js"></script>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.668.0.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row mb-1">
+              <div class="col-lg-8 mx-auto">
+                <div class="p-5">
+                  <!-- <form action=""> -->
+                    <div class="p-1 bg-light rounded rounded-pill shadow-sm mb-4">
+                      <div class="input-group">
+                        <input id="searchInput" type="search" placeholder="What're you searching for?" class="form-control border-0 bg-light">
+                        <div class="input-group-append">
+                          <button id="voiceInput" class="btn btn-light" type="button"><i class="fa fa-microphone"></i></button>
+                        </div>
+                      </div>
+                    </div>  
+                  <!-- </form> -->
+                  <div id="album"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-1">
+                <div class="col-lg-8 mx-auto">
+                    <div class="p-5">
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="customFile" accept="image/jpeg">
+                                <label class="custom-file-label" for="customFile">Choose file</label>
+                            </div>
+                            <div class="input-group-append">
+                                <button id="uploadBtn" class="btn btn-outline-secondary" type="button">Upload</button>
+                            </div>
+                        </div>     
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-1"> 
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('#searchInput').keypress(function(event){
+                var keycode = event.keyCode;
+                if (keycode == '13'){
+                    var text = $('#searchInput').val();
+                    search(text);
+                };
+                event.stopPropagation();
+            });
+
+            $('#voiceInput').click(function(){
+                // //only works for Chrome
+                if (window.hasOwnProperty('webkitSpeechRecognition')) {
+
+                    var recognition = new webkitSpeechRecognition();
+
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+
+                    recognition.lang = "en-US";
+                    recognition.start();
+
+                    recognition.onresult = function(e) {
+                        var trans = e.results[0][0].transcript;
+                        search(trans);
+                        recognition.stop();
+                    }; 
+
+                    recognition.onerror = function(e) {
+                    recognition.stop();
+                    };
+                };
+            });
+
+            $('.custom-file-input').on('change', function(event) { 
+                var fileName = $(this).val().split('\\').pop(); 
+                var files = event.target.files;
+                var file = files[0];
+                if (files && file){
+                    // var albumPhotosKey = encodeURIComponent(albumName) + "//";
+                    // var photoKey = albumPhotosKey + fileName;
+                    // Use S3 ManagedUpload class as it supports multipart uploads
+                    AWS.config.update({
+                        region: "us-east-1",
+                        credentials: new AWS.Credentials({
+                            accessKeyId: "AKIAWUXWKZ2SX677D5NQ",
+                            secretAccessKey: "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",
+                        })
+                    });
+                    var upload = new AWS.S3.ManagedUpload({
+                    params: {
+                        Bucket: "h3-photos",
+                        Key: fileName,
+                        Body: file,
+                        ACL: "public-read"
+                    }
+                    });
+
+                    var promise = upload.promise();
+
+                    promise.then(
+                    function(data) {
+                        alert("Successfully uploaded photo.");
+                    },
+                    function(err) {
+                        return alert("There was an error uploading your photo: " + err.message);
+                    }
+                    );
+                };
+                $(this).next('.custom-file-label').addClass("selected").html(fileName); 
+            });
+            
+            // $('#uploadBtn').click(function(){
+            //     var files = $('.custom-file-input').files;
+            //     alert(files);
+            //     var file = files[0];
+            //     // var apigClient = apigClientFactory.newClient();
+            // });
+
+            function viewAlbum() {
+                AWS.config.update({
+                        region: "us-east-1",
+                        credentials: new AWS.Credentials({
+                            accessKeyId: "AKIAWUXWKZ2SX677D5NQ",
+                            secretAccessKey: "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",
+                        })
+                    });
+                var s3 = new AWS.S3({
+                    apiVersion: "2006-03-01",
+                    params: { Bucket: "h3-photos" }
+                });
+                s3.listObjects(function(err, data) {
+                    if (err) {
+                    return alert("There was an error viewing your album: " + err.message);
+                    }
+                    // 'this' references the AWS.Response instance that represents the response
+                    var hrefs = this.request.httpRequest.endpoint.href.split('//');
+                    var href = hrefs[0] + "/" + "h3-photos." + hrefs[1];
+                    var bucketUrl = href;
+
+                    var photos = data.Contents.map(function(photo) {
+                        var photoKey = photo.Key;
+                        var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+                        return getHtml([
+                            "<span>",
+                            "<div>",
+                            '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
+                            "</div>",
+                            "</span>"
+                        ]);
+                    });
+                    var message = photos.length
+                    ? "<p>We find the following photos.</p>"
+                    : "<p>You do not have any photos in this album. Please add photos.</p>";
+                    var htmlTemplate = [
+                        message,
+                        "<div>",
+                        getHtml(photos),
+                        "</div>",
+                    ];
+                    // document.getElementById("album").innerHTML = getHtml(htmlTemplate);
+                    $("#album").html(getHtml(htmlTemplate));
+                });
+            };
+
+            function getHtml(template) {
+                return template.join('\n');
+            };
+
+            function search(text){
+                var apigClient = apigClientFactory.newClient({
+                            accessKey: 'AKIAWUXWKZ2SX677D5NQ',
+                            secretKey: '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',
+                        });
+                var apigClient = apigClientFactory.newClient({
+                    apiKey: 'CmCg8cOQxo8azQmlQ3IGo3mh608hn7iB61ghHpVF'
+                });
+                var params = {
+                    q: text,
+                };
+                var body = {
+                    "q": text,
+                };
+                apigClient.searchGet(params, body)
+                .then(function(result){
+                // Add success callback code here.
+                alert(result);
+                }).catch( function(result){
+                // Add error callback code here.
+                });
+                viewAlbum();
+            };
+        </script>   
+    </body>
+</html>
+
+
