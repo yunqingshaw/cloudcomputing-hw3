@@ -192,26 +192,26 @@
             };
 
             function search(text){
-                // var apigClient = apigClientFactory.newClient({
-                //             accessKey: 'AKIAWUXWKZ2SX677D5NQ',
-                //             secretKey: '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',
-                //         });
-                // var apigClient = apigClientFactory.newClient({
-                //     apiKey: 'CmCg8cOQxo8azQmlQ3IGo3mh608hn7iB61ghHpVF'
-                // });
-                // var params = {
-                //     q: text,
-                // };
-                // var body = {
-                //     "q": text,
-                // };
-                // apigClient.searchGet(params, body)
-                // .then(function(result){
-                // // Add success callback code here.
-                // alert(result);
-                // }).catch( function(result){
-                // // Add error callback code here.
-                // });
+                var apigClient = apigClientFactory.newClient({
+                            accessKey: 'AKIAWUXWKZ2SX677D5NQ',
+                            secretKey: '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',
+                        });
+                var apigClient = apigClientFactory.newClient({
+                    apiKey: 'CmCg8cOQxo8azQmlQ3IGo3mh608hn7iB61ghHpVF'
+                });
+                var params = {
+                    q: text,
+                };
+                var body = {
+                    "q": text,
+                };
+                apigClient.searchGet(params, body)
+                .then(function(result){
+                // Add success callback code here.
+                alert(result);
+                }).catch( function(result){
+                // Add error callback code here.
+                });
                 viewAlbum();
             };
         </script>   
