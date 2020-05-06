@@ -140,7 +140,7 @@
             //     // var apigClient = apigClientFactory.newClient();
             // });
 
-            function viewAlbum() {
+            function viewAlbum(arr) {
                 AWS.config.update({
                         region: "us-east-1",
                         credentials: new AWS.Credentials({
@@ -159,21 +159,52 @@
                     // 'this' references the AWS.Response instance that represents the response
                     var hrefs = this.request.httpRequest.endpoint.href.split('//');
                     var href = hrefs[0] + "//" + "h3-photos." + hrefs[1];
+                    alert(href);
                     var bucketUrl = href;
 
-                    var photos = data.Contents.map(function(photo) {
-                        var photoKey = photo.Key;
-                        var photoUrl = bucketUrl + encodeURIComponent(photoKey);
-                        
-                        return getHtml([
-                            "<span>",
-                            "<div>",
-                            '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
-                            "</div>",
-                            "</span>"
-                        ]);
+                    var index = 0;
+                    var arrs = arr.split('[')[1].split(']')[0].split(',');
+                    // alert(arrs);     
+                    // while (index < arrs.length) { 
+                    //     var photoKey = arrs[index].split("\"")[1];
+                    //     var photoUrl = bucketUrl + encodeURIComponent(photoKey); 
+                    //     alert(photoUrl); 
+                    //     return getHtml([
+                    //         "<span>",
+                    //         "<div>",
+                    //         '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
+                    //         "</div>",
+                    //         "</span>"
+                    //     ]);
+                    //     index++; 
+                    //     alert(index);
+                    // };
+                    var photos = arrs.map(function(item) {
+                            var photoKey = item.split("\"")[1];
+                            var photoUrl = bucketUrl + encodeURIComponent(photoKey); 
+                            alert(photoUrl); 
+                            return getHtml([
+                                "<span>",
+                                "<div>",
+                                '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
+                                "</div>",
+                                "</span>"
+                            ]);
                     });
-                    var message = photos.length
+                    // var photos = data.Contents.map(function(photo) {
+                    //     var photoKey = photo.Key;
+                    //     alert(photoKey);
+                    //     var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+                        
+                    //     return getHtml([
+                    //         "<span>",
+                    //         "<div>",
+                    //         '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
+                    //         "</div>",
+                    //         "</span>"
+                    //     ]);
+                    // });
+                    var message = arrs.length
                     ? "<p>We find the following photos.</p>"
                     : "<p>You do not have any photos in this album. Please add photos.</p>";
                     var htmlTemplate = [
@@ -208,11 +239,11 @@
                 apigClient.searchGet(params, body)
                 .then(function(result){
                 // Add success callback code here.
-                alert(result);
+                var arr = JSON.stringify(result.data.photos);
+                viewAlbum(arr);
                 }).catch( function(result){
                 // Add error callback code here.
                 });
-                viewAlbum();
             };
         </script>   
     </body>
