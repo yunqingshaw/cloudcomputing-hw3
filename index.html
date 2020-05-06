@@ -85,6 +85,7 @@
 
                     recognition.onresult = function(e) {
                         var trans = e.results[0][0].transcript;
+                        alert(trans);
                         search(trans);
                         recognition.stop();
                     }; 
@@ -100,9 +101,6 @@
                 var files = event.target.files;
                 var file = files[0];
                 if (files && file){
-                    // var albumPhotosKey = encodeURIComponent(albumName) + "//";
-                    // var photoKey = albumPhotosKey + fileName;
-                    // Use S3 ManagedUpload class as it supports multipart uploads
                     AWS.config.update({
                         region: "us-east-1",
                         credentials: new AWS.Credentials({
@@ -159,26 +157,10 @@
                     // 'this' references the AWS.Response instance that represents the response
                     var hrefs = this.request.httpRequest.endpoint.href.split('//');
                     var href = hrefs[0] + "//" + "h3-photos." + hrefs[1];
-                    alert(href);
                     var bucketUrl = href;
 
                     var index = 0;
                     var arrs = arr.split('[')[1].split(']')[0].split(',');
-                    // alert(arrs);     
-                    // while (index < arrs.length) { 
-                    //     var photoKey = arrs[index].split("\"")[1];
-                    //     var photoUrl = bucketUrl + encodeURIComponent(photoKey); 
-                    //     alert(photoUrl); 
-                    //     return getHtml([
-                    //         "<span>",
-                    //         "<div>",
-                    //         '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
-                    //         "</div>",
-                    //         "</span>"
-                    //     ]);
-                    //     index++; 
-                    //     alert(index);
-                    // };
                     var photos = arrs.map(function(item) {
                             var photoKey = item.split("\"")[1];
                             var photoUrl = bucketUrl + encodeURIComponent(photoKey); 
