@@ -48,9 +48,9 @@
                                 <input type="file" class="custom-file-input" id="customFile" accept="image/jpeg">
                                 <label class="custom-file-label" for="customFile">Choose file</label>
                             </div>
-                            <div class="input-group-append">
+                            <!-- <div class="input-group-append">
                                 <button id="uploadBtn" class="btn btn-outline-secondary" type="button">Upload</button>
-                            </div>
+                            </div> -->
                         </div>     
                     </div>
                 </div>
@@ -132,7 +132,7 @@
             });
             
             // $('#uploadBtn').click(function(){
-            //     var files = $('.custom-file-input').files;
+            //     var files = $('.custom-file-input').next('.custom-file-label').selected;
             //     alert(files);
             //     var file = files[0];
             //     // var apigClient = apigClientFactory.newClient();
@@ -161,8 +161,13 @@
 
                     var index = 0;
                     var arrs = arr.split('[')[1].split(']')[0].split(',');
+                    var hasRes = true;
                     var photos = arrs.map(function(item) {
                             var photoKey = item.split("\"")[1];
+                            if (typeof photoKey == 'undefined'){
+                                hasRes = false;
+                                alert('undefined');
+                            }
                             var photoUrl = bucketUrl + encodeURIComponent(photoKey); 
                             alert(photoUrl); 
                             return getHtml([
@@ -173,29 +178,19 @@
                                 "</span>"
                             ]);
                     });
-                    // var photos = data.Contents.map(function(photo) {
-                    //     var photoKey = photo.Key;
-                    //     alert(photoKey);
-                    //     var photoUrl = bucketUrl + encodeURIComponent(photoKey);
-                        
-                    //     return getHtml([
-                    //         "<span>",
-                    //         "<div>",
-                    //         '<img style="width:256px;height:256px;" src="' + photoUrl + '"/>',
-                    //         "</div>",
-                    //         "</span>"
-                    //     ]);
-                    // });
-                    var message = arrs.length
-                    ? "<p>We find the following photos.</p>"
-                    : "<p>You do not have any photos in this album. Please add photos.</p>";
-                    var htmlTemplate = [
-                        message,
+                    if (hasRes == false){
+                        var htmlTemplate = [
+                        "<p>We did not find such photos.</p>",
+                        ];
+                    }
+                    else{
+                        var htmlTemplate = [
+                        "<p>We find the following photos.</p>",
                         "<div>",
                         getHtml(photos),
                         "</div>",
-                    ];
-                    // document.getElementById("album").innerHTML = getHtml(htmlTemplate);
+                        ];
+                    }
                     $("#album").html(getHtml(htmlTemplate));
                 });
             };
