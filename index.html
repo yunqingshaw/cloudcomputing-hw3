@@ -158,12 +158,13 @@
                     }
                     // 'this' references the AWS.Response instance that represents the response
                     var hrefs = this.request.httpRequest.endpoint.href.split('//');
-                    var href = hrefs[0] + "/" + "h3-photos." + hrefs[1];
+                    var href = hrefs[0] + "//" + "h3-photos." + hrefs[1];
                     var bucketUrl = href;
 
                     var photos = data.Contents.map(function(photo) {
                         var photoKey = photo.Key;
                         var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+                        
                         return getHtml([
                             "<span>",
                             "<div>",
